@@ -33,9 +33,19 @@
 			{
 				color: red;
 			}
+			svg text
+			{
+				font-size: 12px;
+			}
+			.line {
+				fill: none;
+				stroke: steelblue;
+				stroke-width: 1.5px;
+			}
 		</style>
 		<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
 		<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<script src="js/tw_power.js"></script>
 		<script>
 			Number.prototype.format = function(n, x) {
@@ -108,10 +118,135 @@
 					//console.log(ABR);
 					calculate_data_em();
 					make_report_table();
+					make_plots();
 				});
 				get_data_list();
 				
 			});
+			function make_plots()
+			{
+				$("svg").remove();
+				var x_axis_v = $("#x-axis").val();
+				var y_axis_v = $("#y-axis").val();
+				
+				var ts = g_data.content_o[0];
+				var xs = [];
+				var ys = [];
+				
+				
+				for(var y in g_data.content_o)
+				{
+					if(g_data.content[y][0] == x_axis_v)
+						xs = g_data.content[y];
+				}
+				for(var y in g_data.content_o)
+				{
+					var title = g_data.content_o[y][0];
+					if(y == 0 || title == x_axis_v)
+						continue;
+					ys = g_data.content_o[y];
+					make_plots_impl(ts, xs, ys, g_data.ABR[title]);
+				}
+			}
+			function make_plots_impl(ts, xs, ys, ABR)
+			{
+				console.log(ts, xs, ys, ABR);
+var margin = {top: 60, right: 40, bottom: 40, left: 120},
+    width = 960 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+var formatValue = d3.format(".2s");
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var color = d3.scale.category10();
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom").tickFormat(function(d) { return formatValue(d)});
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left").tickFormat(function(d) { return formatValue(d)});
+
+var svg = d3.select("#report_plot").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    
+    x.domain( d3.extent(xs.slice(1), function(d){ return +d;}) ).nice();
+    y.domain( d3.extent(ys.slice(1), function(d){ return +d;}) ).nice();
+    
+    var lx = x.domain();
+    var ly = [];
+    for(var i in lx)
+    	ly[i] = ABR[0] + ABR[1]*lx[i];
+    console.log(lx, ly);
+    
+var line = d3.svg.line()
+    .x(function(d){return x( d );})
+    .y(function(d){return y( ABR[0] + ABR[1]*d )});
+
+svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text(xs[0]);
+svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text(ys[0]);
+svg.selectAll(".dot")
+      .data(xs.slice(1))
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 3.5)
+      .attr("cx", function(d, i) { return x( xs[i+1] ); })
+      .attr("cy", function(d, i) { return y( ys[i+1] ); })
+      .style("fill", "#666");
+svg.selectAll(".dot_text")
+      .data(xs.slice(1))
+    .enter().append("text")
+      .attr("class", "dot_text")
+      .attr("x", function(d, i) { return x( xs[i+1] )+5; })
+      .attr("y", function(d, i) { return y( ys[i+1] ); })
+      .text( function(d, i) { return ts[i+1]; } );
+
+svg.append("g").attr("class", "plot_ABR")
+	.append("text")
+	  .attr("x", x( x.domain()[0] ) + 50)
+	  .attr("y", y( y.domain()[1] ) - 20)
+	  .text("y = "+ABR[0].toFixed(3)+" + "+ABR[1].toFixed(3)+"x");
+	  
+svg.append("g").attr("class", "plot_ABR")
+	.append("text")
+	  .attr("x", x( x.domain()[0] ) + 50)
+	  .attr("y", y( y.domain()[1] ) - 40)
+	  .text("R2: "+ABR[3].toFixed(3));  
+
+svg.append("path")
+      .datum(x.domain())
+      .attr("class", "line")
+      .attr("d", line);    
+    
+			}
+			
 			function is_exist(array, value)
 			{
 				for(var key in array)
@@ -263,7 +398,6 @@
 				return v;
 			}
 			
-			
 			function get_data_list()
 			{
 				$.get("server.php?cmd=get_data_list", function(d){
@@ -277,6 +411,8 @@
 					}
 					$("#list_data").html(html);
 					$("#list2_data").html(html);
+					if(d.length != 0)
+						$("#read_data2").trigger("click");
 				});
 			}
 			function join_table_data()
@@ -413,8 +549,9 @@
 	<body>
 	<div id="tabs">
 		<ul>
-			<li><a href="#tabs-input">新增修改</a></li>
 			<li><a href="#tabs-report1">單月報表</a></li>
+			<li><a href="#tabs-input">新增修改</a></li>
+			
 			<li><a href="#tabs-2">Proin dolor</a></li>
 		</ul>
 		
@@ -492,6 +629,9 @@
 				差額
 				<br />
 				<table id="data_m_table"></table>
+				<hr />
+				圖表
+				<div id="report_plot"></div>
 			</div>
 		</div>
 		<div id="tabs-2">

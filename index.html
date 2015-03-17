@@ -11,7 +11,7 @@
 				width:90px;
 				text-align:right;
 			}
-			#y-axis
+			#y-axis, #list2_data
 			{
 				font-size: 12px;
 				height:100px;
@@ -90,20 +90,36 @@
 					});
 				});
 				$("#read_data2").bind("click", function(){
-					var name = $("#list2_data").val();
-					if(name == "")
+					var names = $("#list2_data").val();
+					if(names == null || names.length == 0)
 						return;
-					$.post("server.php?cmd=get_data_content", {full:name}, function(d){
-						var d = JSON.parse(d);
-						g_data = d; //global
-						make_axis(d.content);
-					});
+					var done = function()
+					{
+						make_axis(g_data.content);
+					}
+					var read = 0;
+					for(var i in names)
+					{
+						var name = names[i];
+						$.post("server.php?cmd=get_data_content", {full:name}, function(d){
+							var d = JSON.parse(d);
+							if(read == 0)
+								g_data = d;
+							else
+								merge_data(d);
+							read++;
+							if(read == names.length)
+								done();
+						});
+					}
+					
 				});
 				$("#delete_data").bind("click", function(){
-					var name = $("#saved_data").val();
+					var name = $("#list_data").val();
 					if(name == "")
 						return;
 					$.post("server.php?cmd=delete_data", {full:name}, function(d){
+						console.log(d)
 						get_data_list();
 					});
 				});
@@ -123,6 +139,28 @@
 				get_data_list();
 				
 			});
+			function merge_data(d)
+			{
+				var data = d.content;
+				var odata = g_data.content;
+				for(var y in data)
+				{
+					if(y == 0) continue;
+					var title = data[y][0];
+					for(var oy in odata)
+					{
+						if(oy == 0) continue;
+						var otitle = odata[oy][0];
+						if(title != otitle) continue;
+						// title same... merge
+						for(var ox in odata[oy])
+						{
+							if(ox == 0) continue;
+							odata[oy][ox] = parseInt(odata[oy][ox]) + parseInt(data[y][ox]); 	
+						}
+					}
+				}
+			}
 			function make_plots()
 			{
 				$("svg").remove();
@@ -407,7 +445,10 @@ svg.append("path")
 					{
 						var data = d[key];
 						var name = data.name + " (" + data.year + "/" + data.month + ")";
-						html += "<option value='"+data.full+"'>"+name+"</option>";
+						if(key == 0)
+							html += "<option value='"+data.full+"' selected='' >"+name+"</option>";
+						else
+							html += "<option value='"+data.full+"'>"+name+"</option>";
 					}
 					$("#list_data").html(html);
 					$("#list2_data").html(html);
@@ -550,9 +591,7 @@ svg.append("path")
 	<div id="tabs">
 		<ul>
 			<li><a href="#tabs-report1">單月報表</a></li>
-			<li><a href="#tabs-input">新增修改</a></li>
-			
-			<li><a href="#tabs-2">Proin dolor</a></li>
+			<li><a href="#tabs-input">新增修改</a></li>s
 		</ul>
 		
 		<div id="tabs-input">
@@ -606,8 +645,9 @@ svg.append("path")
 		<div id="tabs-report1">
 			<div>
 				選取資料
-				<select id="list2_data"></select>
+				<select id="list2_data" multiple=""></select>
 				<input id="read_data2" type="button" value="讀取資料" />
+				（表格大小必須一致，否則可能有誤）
 				<hr />
 				X軸（供電量）
 				<select id="x-axis" ></select>

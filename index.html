@@ -501,8 +501,7 @@ svg.append("path")
 				
 				var lines = data;
 				if(typeof(data) == "string")
-					lines = data.split("\n");
-				
+					lines = data.split(/[\n\r]/);
 				for(var key in lines)
 				{
 					var tabs = lines[key];
@@ -517,7 +516,7 @@ svg.append("path")
 						
 						if(key == 0 && key2 == 0) // null
 						{
-							html_pt_null += "<input id='data_"+key+"_"+key2+"' type='text' value='"+ v +"' />";
+							html_pt_null += "<input id='data_"+key+"_"+key2+"' type='text' value='"+ v +"' style='margin-right:20px;' />";
 						}
 						else if(key == 0 && key2 != 0) // column
 						{
@@ -590,8 +589,8 @@ svg.append("path")
 	<body>
 	<div id="tabs">
 		<ul>
-			<li><a href="#tabs-report1">單月報表</a></li>
-			<li><a href="#tabs-input">新增修改</a></li>s
+			<li><a href="#tabs-report1">統計報表</a></li>
+			<li><a href="#tabs-input">新增修改</a></li>
 		</ul>
 		
 		<div id="tabs-input">
@@ -627,7 +626,7 @@ svg.append("path")
 				<input id="name_data" type="text" size="20" placeholder="請輸入資料名稱" />
 				<input id="save_data" type="button" value="儲存資料" />
 				<hr />
-				<input id="paste_data" type="text" size="10" placeholder="在此貼上資料" />
+				<input id="paste_data" type="text" size="16" placeholder="在此貼上資料" />
 			</div>
 			<div id="preview_table">
 				<table>
@@ -673,9 +672,6 @@ svg.append("path")
 				圖表
 				<div id="report_plot"></div>
 			</div>
-		</div>
-		<div id="tabs-2">
-			<p>Morbi </p>
 		</div>
 	</div>		
 	</body>

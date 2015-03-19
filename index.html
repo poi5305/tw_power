@@ -93,6 +93,8 @@
 					var names = $("#list2_data").val();
 					if(names == null || names.length == 0)
 						return;
+					$("#x-axis").html("");
+					$("#y-axis").html("");
 					var done = function()
 					{
 						make_axis(g_data.content);

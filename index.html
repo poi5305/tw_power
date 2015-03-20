@@ -503,7 +503,7 @@ svg.append("path")
 				
 				var lines = data;
 				if(typeof(data) == "string")
-					lines = data.split(/[\n\r]/);
+					lines = data.split(/\r\n|[\r\n]/);
 				for(var key in lines)
 				{
 					var tabs = lines[key];

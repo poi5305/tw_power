@@ -1,5 +1,8 @@
 <?php
 $STORAGE_PREFIX = "gs://#default#/";
+if( ! file_exists ( $STORAGE_PREFIX."saved" ))
+	mkdir($STORAGE_PREFIX."saved");
+
 	
 $cmd = $_GET["cmd"];
 

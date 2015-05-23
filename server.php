@@ -1,4 +1,5 @@
 <?php
+$STORAGE_PREFIX = "gs://#default#/";
 	
 $cmd = $_GET["cmd"];
 
@@ -9,11 +10,11 @@ switch($cmd)
 		$year = $_POST["year"];
 		$month = $_POST["month"];
 		$data = $_POST["data"];
-		file_put_contents("saved/$name|$year|$month", $data);
+		file_put_contents($STORAGE_PREFIX . "saved/$name|$year|$month", $data);
 		break;
 	case "get_data_list":
 		$r = array();
-		$d = dir("saved");
+		$d = dir($STORAGE_PREFIX . $STORAGE_PREFIX . "saved");
 		while (false !== ($entry = $d->read()))
 		{
 			if($entry == "." || $entry == "..")
@@ -27,11 +28,11 @@ switch($cmd)
 		break;
 	case "get_data_content":
 		$full = $_POST["full"];
-		echo file_get_contents("saved/$full");
+		echo file_get_contents($STORAGE_PREFIX . "saved/$full");
 		break;
 	case "delete_data":
 		$full = $_POST["full"];
-		unlink("saved/$full");
+		unlink($STORAGE_PREFIX . "saved/$full");
 		break;
 }
 		

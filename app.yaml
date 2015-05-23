@@ -1,4 +1,4 @@
-application: your-app-id
+application: taipower-xyplot
 version: 1
 runtime: php55
 api_version: 1

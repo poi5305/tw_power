@@ -1,5 +1,5 @@
 <?php
-$STORAGE_PREFIX = "gs://#default#/";
+$STORAGE_PREFIX = "gs://taipower/";
 if( ! file_exists ( $STORAGE_PREFIX."saved" ))
 	mkdir($STORAGE_PREFIX."saved");
 
@@ -17,7 +17,7 @@ switch($cmd)
 		break;
 	case "get_data_list":
 		$r = array();
-		$d = dir($STORAGE_PREFIX . $STORAGE_PREFIX . "saved");
+		$d = dir($STORAGE_PREFIX . "saved");
 		while (false !== ($entry = $d->read()))
 		{
 			if($entry == "." || $entry == "..")
